@@ -7,6 +7,9 @@ from dateutil.relativedelta import relativedelta
 import json
 from .reddit_utils import fetch_top_from_category
 from tqdm import tqdm
+import feedparser
+import requests
+from urllib.parse import quote
 
 def get_YFin_data_window(
     symbol: Annotated[str, "ticker symbol of the company"],
@@ -416,6 +419,85 @@ def get_reddit_global_news(
             news_str += f"### {post['title']}\n\n{post['content']}\n\n"
 
     return f"## Global News Reddit, from {before} to {curr_date}:\n{news_str}"
+
+
+def get_google_news_rss(
+    curr_date: Annotated[str, "Current date in yyyy-mm-dd format"],
+    look_back_days: Annotated[int, "Number of days to look back"] = 7,
+    limit: Annotated[int, "Maximum number of articles to return"] = 10,
+) -> str:
+    """
+    Retrieve global financial/business news from Google News RSS feed.
+    Args:
+        curr_date: Current date in yyyy-mm-dd format
+        look_back_days: Number of days to look back (default 7)
+        limit: Maximum number of articles to return (default 10)
+    Returns:
+        str: A formatted string containing global news articles
+    """
+    # Google News RSS URLs for business/financial news
+    rss_urls = [
+        "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US:en",  # Business
+        "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US:en",  # Economy
+    ]
+
+    curr_date_dt = datetime.strptime(curr_date, "%Y-%m-%d")
+    cutoff_date = curr_date_dt - relativedelta(days=look_back_days)
+
+    all_articles = []
+
+    for rss_url in rss_urls:
+        try:
+            feed = feedparser.parse(rss_url)
+            for entry in feed.entries[:limit]:
+                # Parse the publication date
+                pub_date = None
+                if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                    pub_date = datetime(*entry.published_parsed[:6])
+
+                # Filter by date if we can parse it
+                if pub_date and pub_date.date() < cutoff_date.date():
+                    continue
+
+                article = {
+                    "title": entry.get("title", "No title"),
+                    "source": entry.get("source", {}).get("title", "Unknown") if hasattr(entry, "source") else "Google News",
+                    "link": entry.get("link", ""),
+                    "published": entry.get("published", "Unknown date"),
+                    "summary": entry.get("summary", "")[:500] if entry.get("summary") else "",
+                }
+                all_articles.append(article)
+        except Exception as e:
+            print(f"Warning: Failed to fetch RSS feed: {e}")
+            continue
+
+    # Remove duplicates by title
+    seen_titles = set()
+    unique_articles = []
+    for article in all_articles:
+        if article["title"] not in seen_titles:
+            seen_titles.add(article["title"])
+            unique_articles.append(article)
+
+    # Limit total results
+    unique_articles = unique_articles[:limit]
+
+    if len(unique_articles) == 0:
+        return "No global news found for the specified period."
+
+    # Format output
+    news_str = ""
+    for i, article in enumerate(unique_articles, 1):
+        news_str += f"### {i}. {article['title']}\n"
+        news_str += f"**Source:** {article['source']} | **Date:** {article['published']}\n"
+        if article['summary']:
+            # Clean HTML from summary
+            summary = article['summary'].replace('<b>', '').replace('</b>', '')
+            summary = summary.replace('<a href=', '').replace('</a>', '')
+            news_str += f"{summary}\n"
+        news_str += "\n"
+
+    return f"## Global Financial News (last {look_back_days} days before {curr_date}):\n\n{news_str}"
 
 
 def get_reddit_company_news(

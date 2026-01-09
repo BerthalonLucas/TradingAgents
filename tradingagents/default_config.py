@@ -33,8 +33,8 @@ DEFAULT_CONFIG = {
     },
     # Tool-level configuration (takes precedence over category-level)
     "tool_vendors": {
-        # get_global_news n'a pas d'implementation alpha_vantage, utilise local (Reddit)
-        "get_global_news": "local",
+        # get_global_news utilise Google News RSS (gratuit, pas de cle API)
+        "get_global_news": "google_rss",
         # get_insider_sentiment n'a que local comme implementation
         "get_insider_sentiment": "local",
     },
