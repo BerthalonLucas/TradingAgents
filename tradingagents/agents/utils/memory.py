@@ -5,21 +5,46 @@ from openai import OpenAI
 
 class FinancialSituationMemory:
     def __init__(self, name, config):
+        # Determine embedding model based on provider
         if config["backend_url"] == "http://localhost:11434/v1":
+            # Ollama
             self.embedding = "nomic-embed-text"
+        elif config.get("llm_provider", "").lower() == "lm studio" or "localhost:1234" in config["backend_url"]:
+            # LM Studio - use local embedding model
+            self.embedding = config.get("embedding_model", "text-embedding-nomic-embed-text-v1.5")
         else:
+            # OpenAI or other cloud providers
             self.embedding = "text-embedding-3-small"
         self.client = OpenAI(base_url=config["backend_url"])
         self.chroma_client = chromadb.Client(Settings(allow_reset=True))
         self.situation_collection = self.chroma_client.create_collection(name=name)
 
     def get_embedding(self, text):
-        """Get OpenAI embedding for a text"""
-        
-        response = self.client.embeddings.create(
-            model=self.embedding, input=text
-        )
-        return response.data[0].embedding
+        """Get embedding for a text, chunking if necessary"""
+        # Rough estimate: 1 token ≈ 4 chars, 512 tokens ≈ 2000 chars
+        # Use 1800 chars per chunk to be safe
+        max_chars_per_chunk = 1800
+
+        if len(text) <= max_chars_per_chunk:
+            # Text fits in one chunk
+            response = self.client.embeddings.create(
+                model=self.embedding, input=text
+            )
+            return response.data[0].embedding
+
+        # Split text into chunks and average the embeddings
+        chunks = [text[i:i + max_chars_per_chunk] for i in range(0, len(text), max_chars_per_chunk)]
+
+        all_embeddings = []
+        for chunk in chunks:
+            response = self.client.embeddings.create(
+                model=self.embedding, input=chunk
+            )
+            all_embeddings.append(response.data[0].embedding)
+
+        # Average all chunk embeddings
+        avg_embedding = [sum(x) / len(x) for x in zip(*all_embeddings)]
+        return avg_embedding
 
     def add_situations(self, situations_and_advice):
         """Add financial situations and their corresponding advice. Parameter is a list of tuples (situation, rec)"""

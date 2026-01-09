@@ -152,6 +152,25 @@ def select_shallow_thinking_agent(provider) -> str:
         "ollama": [
             ("llama3.1 local", "llama3.1"),
             ("llama3.2 local", "llama3.2"),
+        ],
+        "lm studio": [
+            ("GPT-OSS 120B - OpenAI open-source flagship", "openai/gpt-oss-120b"),
+            ("GPT-OSS 20B - OpenAI open-source compact", "openai/gpt-oss-20b"),
+            ("Qwen3 Next 80B - Advanced reasoning", "qwen3-next-80b-a3b-instruct"),
+            ("Qwen3 Coder 30B - Code specialist", "qwen/qwen3-coder-30b"),
+            ("Qwen3 VL 30B Thinking - Vision + reasoning", "qwen3-vl-30b-a3b-thinking"),
+            ("Devstral Small 24B - Mistral dev model", "devstral-small-2-24b-instruct-2512"),
+            ("Ministral 14B Reasoning", "ministral-3-14b-reasoning-2512"),
+            ("Ministral 8B Reasoning", "ministral-3-8b-reasoning-2512"),
+            ("Ministral 3B Reasoning - Lightweight", "ministral-3-3b-reasoning-2512"),
+            ("Nemotron 3 Nano 30B", "nemotron-3-nano-30b-a3b"),
+            ("Nemotron 3 Nano", "nvidia/nemotron-3-nano"),
+            ("NVIDIA Orchestrator 8B", "nvidia_orchestrator-8b"),
+            ("MiniMax M2.1", "minimax-m2.1"),
+            ("GLM 4.6V - Vision model", "glm-4.6v"),
+            ("Granite 4.0 H-Micro - IBM", "granite-4.0-h-micro"),
+            ("Granite 4 H-Tiny - IBM lightweight", "ibm/granite-4-h-tiny"),
+            ("FunctionGemma 270M - Tool calling", "functiongemma-270m-it"),
         ]
     }
 
@@ -214,9 +233,28 @@ def select_deep_thinking_agent(provider) -> str:
         "ollama": [
             ("llama3.1 local", "llama3.1"),
             ("qwen3", "qwen3"),
+        ],
+        "lm studio": [
+            ("GPT-OSS 120B - OpenAI open-source flagship", "openai/gpt-oss-120b"),
+            ("GPT-OSS 20B - OpenAI open-source compact", "openai/gpt-oss-20b"),
+            ("Qwen3 Next 80B - Advanced reasoning", "qwen3-next-80b-a3b-instruct"),
+            ("Qwen3 Coder 30B - Code specialist", "qwen/qwen3-coder-30b"),
+            ("Qwen3 VL 30B Thinking - Vision + reasoning", "qwen3-vl-30b-a3b-thinking"),
+            ("Devstral Small 24B - Mistral dev model", "devstral-small-2-24b-instruct-2512"),
+            ("Ministral 14B Reasoning", "ministral-3-14b-reasoning-2512"),
+            ("Ministral 8B Reasoning", "ministral-3-8b-reasoning-2512"),
+            ("Ministral 3B Reasoning - Lightweight", "ministral-3-3b-reasoning-2512"),
+            ("Nemotron 3 Nano 30B", "nemotron-3-nano-30b-a3b"),
+            ("Nemotron 3 Nano", "nvidia/nemotron-3-nano"),
+            ("NVIDIA Orchestrator 8B", "nvidia_orchestrator-8b"),
+            ("MiniMax M2.1", "minimax-m2.1"),
+            ("GLM 4.6V - Vision model", "glm-4.6v"),
+            ("Granite 4.0 H-Micro - IBM", "granite-4.0-h-micro"),
+            ("Granite 4 H-Tiny - IBM lightweight", "ibm/granite-4-h-tiny"),
+            ("FunctionGemma 270M - Tool calling", "functiongemma-270m-it"),
         ]
     }
-    
+
     choice = questionary.select(
         "Select Your [Deep-Thinking LLM Engine]:",
         choices=[
@@ -247,7 +285,8 @@ def select_llm_provider() -> tuple[str, str]:
         ("Anthropic", "https://api.anthropic.com/"),
         ("Google", "https://generativelanguage.googleapis.com/v1"),
         ("Openrouter", "https://openrouter.ai/api/v1"),
-        ("Ollama", "http://localhost:11434/v1"),        
+        ("Ollama", "http://localhost:11434/v1"),
+        ("LM Studio", "http://localhost:1234/v1"),
     ]
     
     choice = questionary.select(

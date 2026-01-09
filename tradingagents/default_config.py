@@ -13,6 +13,12 @@ DEFAULT_CONFIG = {
     "deep_think_llm": "o4-mini",
     "quick_think_llm": "gpt-4o-mini",
     "backend_url": "https://api.openai.com/v1",
+    # LLM parameters (useful for local models like LM Studio)
+    "llm_max_tokens": 4096,          # Max tokens in response
+    "llm_temperature": 0.7,          # Temperature (0.0 - 2.0)
+    "llm_context_length": 32768,     # Context window size (for LM Studio extra_body)
+    # Embedding model for memory (LM Studio only)
+    "embedding_model": "text-embedding-nomic-embed-text-v2-moe",
     # Debate and discussion settings
     "max_debate_rounds": 1,
     "max_risk_discuss_rounds": 1,
@@ -27,7 +33,9 @@ DEFAULT_CONFIG = {
     },
     # Tool-level configuration (takes precedence over category-level)
     "tool_vendors": {
-        # Example: "get_stock_data": "alpha_vantage",  # Override category default
-        # Example: "get_news": "openai",               # Override category default
+        # get_global_news n'a pas d'implementation alpha_vantage, utilise local (Reddit)
+        "get_global_news": "local",
+        # get_insider_sentiment n'a que local comme implementation
+        "get_insider_sentiment": "local",
     },
 }

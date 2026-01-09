@@ -72,7 +72,23 @@ class TradingAgentsGraph:
         )
 
         # Initialize LLMs
-        if self.config["llm_provider"].lower() == "openai" or self.config["llm_provider"] == "ollama" or self.config["llm_provider"] == "openrouter":
+        if self.config["llm_provider"].lower() == "lm studio":
+            # LM Studio with custom parameters (context length, temperature, etc.)
+            lm_studio_kwargs = {
+                "model": self.config["deep_think_llm"],
+                "base_url": self.config["backend_url"],
+                "temperature": self.config.get("llm_temperature", 0.7),
+                "max_tokens": self.config.get("llm_max_tokens", 4096),
+                "model_kwargs": {
+                    "extra_body": {
+                        "n_ctx": self.config.get("llm_context_length", 32768),
+                    }
+                }
+            }
+            self.deep_thinking_llm = ChatOpenAI(**lm_studio_kwargs)
+            lm_studio_kwargs["model"] = self.config["quick_think_llm"]
+            self.quick_thinking_llm = ChatOpenAI(**lm_studio_kwargs)
+        elif self.config["llm_provider"].lower() in ["openai", "ollama", "openrouter"]:
             self.deep_thinking_llm = ChatOpenAI(model=self.config["deep_think_llm"], base_url=self.config["backend_url"])
             self.quick_thinking_llm = ChatOpenAI(model=self.config["quick_think_llm"], base_url=self.config["backend_url"])
         elif self.config["llm_provider"].lower() == "anthropic":
